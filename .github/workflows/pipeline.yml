@@ -1,0 +1,44 @@
+name: Tourism Project Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-project:
+    name: Validate Tourism Project
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Check Required Project Files
+        run: |
+          python -c "from pathlib import Path; files=['app.py','tourism_model.pkl','requirements.txt']; missing=[f for f in files if not Path(f).is_file()]; print('Missing files:', missing) if missing else print('All required files are present'); exit(bool(missing))"
+
+      - name: Check Python Syntax
+        run: |
+          python -m py_compile app.py
+
+      - name: Verify Streamlit Installation
+        run: |
+          python -m streamlit --version
